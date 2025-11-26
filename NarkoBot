@@ -1,0 +1,165 @@
+import random
+import asyncio
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+
+TELEGRAM_BOT_TOKEN = '8317064905:AAEMceq9WH3eMFUSBVd1CWI1L4eCb1SSml4' #КОД СДЕЛАЛ @Fell1ksx
+
+ITEM_PRICES = {
+    "item_1": 2.0,
+    "item_2": 1.7,
+    "item_3": 4.0,
+    "item_4": 3.2,#КОД СДЕЛАЛ @Fell1ksx
+    "item_5": 23.0,
+    "item_6": 1.6,#КОД СДЕЛАЛ @Fell1ksx
+    "item_7": 2.2,
+    "item_8": 20.0,
+    "item_9": 20.0,
+    "item_10": 20.0,
+    "item_11": 68.0,
+    "item_12": 37.0,
+    "item_13": 50.0,
+}
+
+ITEM_NAMES = {
+    "item_1": "S0ль 🧂",#КОД СДЕЛАЛ @Fell1ksx
+    "item_2": "М@рuван@ 🚬",
+    "item_3": "К0коS 🥥",
+    "item_4": "@мф3тaмuн 💎",
+    "item_5": "@lpha PVP 💀",
+    "item_6": "3кsтазu 🎉",#КОД СДЕЛАЛ @Fell1ksx
+    "item_7": "Мyк@ 🌾",
+    "item_8": "Гаwuw 🍁",
+    "item_9": "Wuшки 🌿",
+    "item_10": "Sп@йs 🌈",
+    "item_11": "MDM@ 💊",
+    "item_12": "LSD 🌌",#КОД СДЕЛАЛ @Fell1ksx
+    "item_13": "MIX 🍹",
+}
+
+current_item = None
+previous_message = {"text": "", "markup": None}#КОД СДЕЛАЛ @Fell1ksx
+
+def create_button(text, callback_data):
+    return InlineKeyboardButton(text=text, callback_data=callback_data)
+
+def create_menu():
+    report_button = create_button("📋 Список товаров", "report")#КОД СДЕЛАЛ @Fell1ksx
+    profile_button = create_button("📋 Профиль", "profile")
+    payment_button = create_button("💳 Как оплатить", "payment_info")
+    menu = InlineKeyboardMarkup([[report_button, profile_button], [payment_button]])
+    return menu#КОД СДЕЛАЛ @Fell1ksx
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text("Добро пожаловать! Нажмите кнопку для меню:", reply_markup=create_menu())
+
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:#КОД СДЕЛАЛ @Fell1ksx
+    global current_item
+    query = update.callback_query#КОД СДЕЛАЛ @Fell1ksx
+    await query.answer()
+
+    if query.data == "report":
+        text = "Выберите желаемый товар:"
+        markup = create_item_menu()
+        await safe_edit_message_text(query, text, markup)#КОД СДЕЛАЛ @Fell1ksx
+    elif query.data.startswith("item_"):
+        current_item = query.data#КОД СДЕЛАЛ @Fell1ksx
+        text = f"Вы выбрали товар {ITEM_NAMES[current_item]}.\n💎 Введите, сколько граммов вы желаете:"
+        markup = create_back_button_menu()
+        await safe_edit_message_text(query, text, markup)#КОД СДЕЛАЛ @Fell1ksx
+        return
+    elif query.data == "profile":#КОД СДЕЛАЛ @Fell1ksx
+        text = "Вы открыли свой профиль.\n\n🎭 Вы полностью анонимны!\n"
+        await safe_edit_message_text(query, text)
+    elif query.data == "payment_info":
+        text = ("💳 Как пополнить баланс:\n\n"
+                "1. Откройте бота @CryptoBot.\n"
+                "2. Нажмите на команду /start для начала работы.\n"#КОД СДЕЛАЛ @Fell1ksx
+                "3. Выберите опцию P2P.\n"
+                "4. Выберите пункт Купить\n"
+                "5. Выберите способ оплаты\n"
+                "6. Выберите объявление\n"
+                "7. Ожидайте одобрение продавца \n"#КОД СДЕЛАЛ @Fell1ksx
+                "8. Переводите по счету который вам отправит владелец!\n"
+                "9. Готово!")
+        await safe_edit_message_text(query, text)
+    elif query.data == "back":
+        text = "Вы вернулись в меню выбора товаров:\n"
+        markup = create_item_menu()
+        await safe_edit_message_text(query, text, markup)
+#КОД СДЕЛАЛ @Fell1ksx
+def create_item_menu():
+    item_buttons = [
+        [create_button("🧂 S0ль", "item_1"), create_button("🚬 М@рuвана", "item_2")],
+        [create_button("🥥 Кок0s", "item_3"), create_button("💎 @мф3т@мин", "item_4")],
+        [create_button("💀 @lph@ PVP", "item_5"), create_button("🎉 3кsт@зи", "item_6")],#КОД СДЕЛАЛ @Fell1ksx
+        [create_button("🌾 Мука", "item_7"), create_button("🍁 Гаwиш", "item_8")],
+        [create_button("🌿 Шuшки", "item_9"), create_button("🌈 Сп@йs", "item_10")],
+        [create_button("💊 MDM@", "item_11"), create_button("🌌 LSD", "item_12")],
+        [create_button("🍹 MIX", "item_13")],
+        [create_button("➡️ Назад", "back")]#КОД СДЕЛАЛ @Fell1ksx
+    ]
+    return InlineKeyboardMarkup(item_buttons)
+
+def create_back_button_menu():
+    back_button = create_button("➡️ Назад", "back")
+    return InlineKeyboardMarkup([[back_button]])#КОД СДЕЛАЛ @Fell1ksx
+
+async def receive_grams(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    global current_item
+    if current_item is None:
+        await update.message.reply_text("Пожалуйста, сначала выберите товар.")#КОД СДЕЛАЛ @Fell1ksx
+        return
+
+    try:
+        grams = float(update.message.text)
+        price_per_gram = ITEM_PRICES[current_item]
+        total_cost = grams * price_per_gram
+        item_name = ITEM_NAMES[current_item]
+
+        payment_button = InlineKeyboardButton("💳 Оплатить", url="http://t.me/send?start=IVUtfDDFffTh") # поменяйте ссылку на вашу
+        markup = InlineKeyboardMarkup([[payment_button]])
+
+        await update.message.reply_text(
+            f"Стоимость {grams:.1f} грамм(а) товара {item_name} составит ${total_cost:.2f}.\n"
+            "Важно! Оплатите сколько вам показал бот!",
+            reply_markup=markup)#КОД СДЕЛАЛ @Fell1ksx
+
+        await asyncio.sleep(30)
+        await update.message.reply_text("⏰ Пожалуйста подождите. Происходит проверка оплаты!")
+#КОД СДЕЛАЛ @Fell1ksx
+        await asyncio.sleep(29)
+        return_markup = create_menu_with_back()
+        await update.message.reply_text("❌ Мы не нашли информации о пополнении!", reply_markup=return_markup)
+
+        current_item = None
+    except ValueError:
+        await update.message.reply_text("Пожалуйста, введите число (в граммах).")
+
+def create_menu_with_back():#КОД СДЕЛАЛ @Fell1ksx
+    back_button = InlineKeyboardButton("➡️ Вернуться в меню", callback_data="back")
+    return InlineKeyboardMarkup([[back_button]])#КОД СДЕЛАЛ @Fell1ksx
+
+async def safe_edit_message_text(query, text, markup=None):
+    global previous_message#КОД СДЕЛАЛ @Fell1ksx
+    if text != previous_message["text"] or markup != previous_message["markup"]:
+        await query.edit_message_text(text=text, reply_markup=markup)
+        previous_message["text"] = text#КОД СДЕЛАЛ @Fell1ksx
+        previous_message["markup"] = markup
+    else:
+        await query.answer("Сообщение не обновилось, так как содержимое не изменилось.")
+
+def main():
+    global current_item
+    current_item = None#КОД СДЕЛАЛ @Fell1ksx
+
+    application = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+#КОД СДЕЛАЛ @Fell1ksx
+    application.add_handler(CommandHandler('start', start))
+    application.add_handler(CallbackQueryHandler(button_handler))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, receive_grams))#КОД СДЕЛАЛ @Fell1ksx
+
+    application.run_polling()#КОД СДЕЛАЛ @Fell1ksx
+
+if __name__ == '__main__':
+    main()#КОД СДЕЛАЛ @Fell1ksx
